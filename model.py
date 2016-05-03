@@ -23,10 +23,14 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=True)
     zipcode = db.Column(db.String(15), nullable=True)
 
+    def __repr__(self):
+        """Proovide helpful representation when printed."""
 
+        return "<User user_id=%s email=%s>" % (self.user_id, self.email)
 # Put your Movie and Rating model classes here.
 
 class Movie(db.Model):
+    """Movie information for ratings website."""
     __tablename__ = "movies"
 
     movie_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -38,6 +42,7 @@ class Movie(db.Model):
     # strptime(my_var, '%d%b%Y')
 
 class Rating(db.Model):
+    """User rating record for a movie."""
     __tablename__ = "ratings"
 
     rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
