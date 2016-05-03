@@ -24,7 +24,7 @@ class User(db.Model):
     zipcode = db.Column(db.String(15), nullable=True)
 
     def __repr__(self):
-        """Proovide helpful representation when printed."""
+        """Provide helpful representation when printed."""
 
         return "<User user_id=%s email=%s>" % (self.user_id, self.email)
 # Put your Movie and Rating model classes here.
@@ -34,12 +34,10 @@ class Movie(db.Model):
     __tablename__ = "movies"
 
     movie_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(64), nullable=False)
+    title = db.Column(db.String(128), nullable=False)
     release_date = db.Column(db.DateTime, nullable=True)
-    imdb_url = db.Column(db.String(100), nullable=True)
+    imdb_url = db.Column(db.String(256), nullable=True)
 
-    # TODO create method to convert string to datetime 
-    # strptime(my_var, '%d%b%Y')
 
 class Rating(db.Model):
     """User rating record for a movie."""
