@@ -49,6 +49,7 @@ def load_movies():
         row = row.rstrip()
         movie_id, title, release_date, nothing, imdb_url = row.split("|")[:5]
         date_object = datetime.strptime(release_date, '%d-%b-%Y')
+        title = title[:-7]
         movie = Movie(movie_id=movie_id, 
                         title=title, 
                         release_date=date_object, 
