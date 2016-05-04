@@ -24,6 +24,28 @@ def index():
 
     return render_template("homepage.html")
 
+@app.route('/movies')
+def movie_list():
+    """Shows list of movies"""
+
+    movies = Movie.query.order_by('title').all()
+    return render_template("movie_list.html", movies=movies)
+
+@app.route('/movies/<int:movie_id>')
+def movie_details(movie_id):
+    """Retrieving details of a single movie."""
+
+    title, release_date, imdb_url = (db.session.query(Movie.title, Movie.release_date, Movie.imdb_url)
+        .filter(Movie.movie_id==movie_id).one())
+
+    movie_ratings = (db.session.query(Rating.score, Rating.user_id).filter(Rating.movie_id==movie_id).all())
+
+    return render_template("movie_details.html", 
+                            title=title, 
+                            release_date=release_date, 
+                            imdb_url=imdb_url, 
+                            movie_ratings=movie_ratings)
+
 @app.route('/users')
 def user_list():
     """Show list of users."""
