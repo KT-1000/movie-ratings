@@ -31,11 +31,22 @@ def user_list():
     users = User.query.all()
     return render_template("user_list.html", users=users)
 
-@app.route('/login')
-def sign_in():
-    """The user sign-in page."""
+@app.route('/users/<int:user_id>')
+def user_details(user_id):
+    """Retrieving details of a single user."""
 
-    return render_template("sign_in.html")
+    user_age, user_zipcode = (db.session.query(User.age, User.zipcode)
+        .filter(User.user_id==user_id).one())
+    # get list of tuples of ratings and movie titles
+    user_ratings = (db.session.query(Rating.score, Movie.title)
+        .join(Movie).filter(Rating.user_id==user_id).all())
+    return render_template("user_details.html", ratings=user_ratings, age=user_age, zipcode=user_zipcode)
+
+@app.route('/login')
+def login():
+    """The user login page."""
+
+    return render_template("login.html")
 
 @app.route('/validation', methods=["POST"])
 def validate_user():
@@ -49,6 +60,7 @@ def validate_user():
     if user:
         # start session based on user id
         session["user_id"] = user.user_id
+        flash('You are now logged in')
         # redirect to homepage
         return redirect('/')
     # if email and password not db
@@ -58,7 +70,13 @@ def validate_user():
         # redirect to login page
         return redirect('/login')
 
+@app.route('/logout')
+def logout_user():
+    """Logs out the user and removes the session."""
 
+    del session["user_id"]
+    flash("You are logged out.")
+    return redirect("/")
 
 @app.route('/register')
 def register():
