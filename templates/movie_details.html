@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <h2>Movie</h2>
+    <p>Title: {{ title }}</p>
+    <p>Release Date: {{ release_date}}</p>
+    <p>Imdb: <a href="{{ imdb_url }}">{{ imdb_url }}</a></p>
+
+    {% if session.get("user_id") %}
+    <form action="/rate_movie">
+      <!-- if user has rated movie-->
+      <input type="text" value="{{}}">
+
+      <!-- if user hasn't rated movie-->
+    </form>
+    {% else %}
+    <form action="/login">
+    <input type="submit" value="Login">
+    {% endif %}
+    </form>
+
+    User Ratings:
+    <ul>
+      {% for rating in movie_ratings %}
+          <li>
+            User {{ rating[1] }} gave a rating of {{ rating[0] }}.
+          </li>
+      {% endfor %}
+    </ul>
+
+{% endblock %}
