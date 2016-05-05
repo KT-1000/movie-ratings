@@ -35,16 +35,50 @@ def movie_list():
 def movie_details(movie_id):
     """Retrieving details of a single movie."""
 
-    title, release_date, imdb_url = (db.session.query(Movie.title, Movie.release_date, Movie.imdb_url)
-        .filter(Movie.movie_id==movie_id).one())
+    # this returns a movie object 
+    movie = (db.session.query(Movie).filter(Movie.movie_id==movie_id).one())
+
+    current_user_id = session.get('user_id')
+    # will update if there is a user rating, or will be passed to Jinja if None
+    current_user_rating = None
+
+    # If user is logged in 
+    if current_user_id:
+        # check to see if user has rated the movie
+        # current_user_rating = (rating_id, movie_id, user_id, score)
+        current_user_rating = (db.session.query(Rating)
+        .filter(Rating.user_id == current_user_id, Rating.movie_id == movie_id).first())
+    # If user isn't logged in, redirect to login page
+    else:
+        flash("Please log in to rate a movie.")
+        return redirect("/login")
 
     movie_ratings = (db.session.query(Rating.score, Rating.user_id).filter(Rating.movie_id==movie_id).all())
 
-    return render_template("movie_details.html", 
-                            title=title, 
-                            release_date=release_date, 
-                            imdb_url=imdb_url, 
-                            movie_ratings=movie_ratings)
+    return render_template("movie_details.html", movie=movie, movie_ratings=movie_ratings, 
+        current_user_id=current_user_id, current_user_rating=current_user_rating)
+
+@app.route('/rate_movie', methods=["POST"])
+def rate_movie():
+    """Updates current rating or adds a new rating."""
+
+    user_id = request.form.get("user_id")
+    movie_id = request.form.get("movie_id")
+    score = request.form.get("score")
+    # check db to see if there is a row with the user id and score
+    current_user_rating = (db.session.query(Rating)
+        .filter(Rating.user_id == user_id, Rating.movie_id == movie_id).first())
+    # Holds true if the user has rated the movie
+    if current_user_rating:
+        # update the existing rating object
+        current_user_rating.score = score
+    else:
+        # movie_id = int(movie_id)
+        new_rating = Rating(movie_id=movie_id, score=score, user_id=user_id)
+        db.session.add(new_rating)
+
+    db.session.commit()
+    return redirect('/movies/' + movie_id)
 
 @app.route('/users')
 def user_list():
@@ -64,11 +98,19 @@ def user_details(user_id):
         .join(Movie).filter(Rating.user_id==user_id).all())
     return render_template("user_details.html", ratings=user_ratings, age=user_age, zipcode=user_zipcode)
 
-@app.route('/login')
+
+
+@app.route('/login', methods=["GET"])
 def login():
     """The user login page."""
 
     return render_template("login.html")
+
+@app.route('/registration', methods=["POST"])
+def add_user():
+    """Adds a new user to the db and logs them in"""
+    pass
+
 
 @app.route('/validation', methods=["POST"])
 def validate_user():

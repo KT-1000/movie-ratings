@@ -2,21 +2,23 @@
 {% block content %}
 
     <h2>Movie</h2>
-    <p>Title: {{ title }}</p>
-    <p>Release Date: {{ release_date}}</p>
-    <p>Imdb: <a href="{{ imdb_url }}">{{ imdb_url }}</a></p>
+    <p>Title: {{ movie.title }}</p>
+    <p>Release Date: {{ movie.release_date}}</p>
+    <p>Imdb: <a href="{{ movie.imdb_url }}">{{ movie.imdb_url }}</a></p>
 
-    {% if session.get("user_id") %}
-    <form action="/rate_movie">
-      <!-- if user has rated movie-->
-      <input type="text" value="{{}}">
-
-      <!-- if user hasn't rated movie-->
-    </form>
+    <!-- User Rating Form -->
+    Rate this movie!
+    <form action="/rate_movie" method="POST">
+    <!-- User has rated movie, so populate form with current rating info -->
+    {% if current_user_rating is not none %}
+      <input type="text" value="{{ current_user_rating.score }}">
+      <!-- User hasn't rated movie, so provide empty form.-->
     {% else %}
-    <form action="/login">
-    <input type="submit" value="Login">
+      <input type="number" name="score" value="score">
     {% endif %}
+      <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+      <input type="hidden" name="user_id" value="{{ current_user_id }}">
+      <input type="submit" value="Submit">     
     </form>
 
     User Ratings:
