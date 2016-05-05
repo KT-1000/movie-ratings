@@ -49,9 +49,8 @@ def movie_details(movie_id):
         current_user_rating = (db.session.query(Rating)
         .filter(Rating.user_id == current_user_id, Rating.movie_id == movie_id).first())
     # If user isn't logged in, redirect to login page
-    else:
-        flash("Please log in to rate a movie.")
-        return redirect("/login")
+    # else:
+    #     flash("Please log in to rate a movie.")
 
     movie_ratings = (db.session.query(Rating.score, Rating.user_id).filter(Rating.movie_id==movie_id).all())
 
@@ -62,22 +61,32 @@ def movie_details(movie_id):
 def rate_movie():
     """Updates current rating or adds a new rating."""
 
+    # if user is in session 
+    current_user_id = session.get('user_id')
+
     user_id = request.form.get("user_id")
     movie_id = request.form.get("movie_id")
     score = request.form.get("score")
-    # check db to see if there is a row with the user id and score
-    current_user_rating = (db.session.query(Rating)
-        .filter(Rating.user_id == user_id, Rating.movie_id == movie_id).first())
-    # Holds true if the user has rated the movie
-    if current_user_rating:
-        # update the existing rating object
-        current_user_rating.score = score
-    else:
-        # movie_id = int(movie_id)
-        new_rating = Rating(movie_id=movie_id, score=score, user_id=user_id)
-        db.session.add(new_rating)
 
-    db.session.commit()
+    if current_user_id:
+        # check db to see if there is a row with the user id and score
+        current_user_rating = (db.session.query(Rating)
+            .filter(Rating.user_id == user_id, Rating.movie_id == movie_id).first())
+        # Holds true if the user has rated the movie
+        if current_user_rating:
+            # update the existing rating object
+            current_user_rating.score = score
+        else:
+            # movie_id = int(movie_id)
+            new_rating = Rating(movie_id=movie_id, score=score, user_id=user_id)
+            db.session.add(new_rating)
+
+        db.session.commit()
+        
+    # else flash message to please log in
+    else:
+        flash('Please log in to rate a movie.')
+
     return redirect('/movies/' + movie_id)
 
 @app.route('/users')
@@ -106,11 +115,35 @@ def login():
 
     return render_template("login.html")
 
+# TO DO FIX ME 
 @app.route('/registration', methods=["POST"])
 def add_user():
     """Adds a new user to the db and logs them in"""
-    pass
 
+    # retrieves new user information from new_user form
+    email = request.form.get("email")
+    password = request.form.get("password")
+    zipcode = request.form.get("zipcode")
+    age = int(request.form.get("age"))
+    
+    # check if the email retrieved is in the db already 
+    # query the db for the email
+    user_id = db.session.query(User.user_id).filter(User.email == email).first()
+    if user_id:
+        flash('That email is already in use!')
+
+        return redirect('/registration')
+    else:
+        # creates a new_user record when they aren't in the database
+        new_user = User(email=email, password=password, zipcode=zipcode, age=age)
+        db.session.add(new_user)
+        db.session.commit()
+
+        user_id = db.session.query(User.user_id).filter(User.email == email).first()
+
+        # gets the new user id and adds it to the session       
+        session["user_id"] = user_id
+        return redirect('/')
 
 @app.route('/validation', methods=["POST"])
 def validate_user():
