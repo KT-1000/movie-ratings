@@ -5,12 +5,18 @@
     <p>Title: {{ movie.title }}</p>
     <p>Release Date: {{ movie.release_date}}</p>
     <p>Imdb: <a href="{{ movie.imdb_url }}">{{ movie.imdb_url }}</a></p>
-
+    <p>Average Rating: {{ average }}</p>
+    {% if prediction %}
+      <p>We predict you will rate this movie {{ prediction }}.</p>
+    {% endif %}
     <!-- User Rating Form -->
     Rate this movie!
     <form action="/rate_movie" method="POST">
     <!-- User has rated movie, so populate form with current rating info -->
     {% if current_user_rating is not none %}
+      {% if beratment is not none %}
+      <p>{{ beratement }}</p>
+      {% endif %}
       <input type="text" value="{{ current_user_rating.score }}">
       <!-- User hasn't rated movie, so provide empty form.-->
     {% else %}
